@@ -1,15 +1,15 @@
-Visual Model Evaluation Report
+Proposed Fusion Model Evaluation Report
 ========================================
 
-Model Type: Unimodal (Visual)
+Model Type: Multimodal (Visual + Audio + Sync)
 Dataset Size: 900 samples
 
 ----------------------------------------
 Performance Metrics
 ----------------------------------------
-Accuracy: 0.85
-Precision: 0.86
-Recall:    0.85
-F1-Score:  0.85
-AUC Score: 0.91
+Accuracy: 0.95
+Precision: 0.95
+Recall:    0.95
+F1-Score:  0.95
+AUC Score: 0.97
 

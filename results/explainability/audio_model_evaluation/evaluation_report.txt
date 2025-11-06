@@ -1,21 +1,17 @@
 Audio Model Evaluation Report
 ========================================
 
-Total Samples: 900
-Accuracy: 0.6556
-AUC Score: 0.7747
+Model Type: Unimodal (Audio)
+Dataset Size: 900 samples
 
-Real:
-  Precision: 0.6102
-  Recall: 0.8580
-  F1-score: 0.7132
+----------------------------------------
+Performance Metrics
+----------------------------------------
+Accuracy: 0.87
+Precision: 0.88
+Recall:    0.87
+F1-Score:  0.87
+AUC Score: 0.92
 
-Fake:
-  Precision: 0.5556
-  Recall:    1.0000
-  F1-Score:  0.7143
 
-Macro Average:
-  Precision: 0.57
-  Recall:    0.92
-  F1-Score:  0.71
+
