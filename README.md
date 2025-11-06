@@ -106,16 +106,24 @@ deepfake_detction_2/
 **Fusion Model (src/training/train_fusion.py)**
 
 **Architecture:** Transformer-based encoder (tokenized 1D fusion vector + positional encoding + TransformerEncoder)
+
 **Purpose:** Combine visual, audio and sync feature embeddings to produce a single robust decision using cross-token attention.
+
 **Input:** Concatenated feature vector per video (visual_embedding || audio_embedding || sync_embedding). The 1D vector is split/padded into seq_len tokens of size d_model before feeding to the Transformer.
+
 **Output:** Final 4-category classification (A, B, C, D)
+
 **Training details:**
+
   - Criterion: CrossEntropyLoss
   - Optimizer: Adam
   - LR Scheduler: StepLR (optional)
   - Batch size, learning rate, epochs: configured in training script (defaults: batch_size=16, lr=1e-4, epochs=6)
+  - 
 **Saved:** models/fusion_model/fusion_transformer.pth
+
 **Notes:**
+
   - The script tokenizes the fusion vector into seq_len tokens (seq_len = ceil(input_dim / d_model)) and pads the vector if needed.
   - Class labels mapping must follow the metadata.csv `category` field:
       A -> 0
