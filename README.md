@@ -104,6 +104,7 @@ deepfake_detction_2/
 - **Saved**: `models/sync_model/sync_model.pth`
 
 **Fusion Model (src/training/train_fusion.py)**
+
 **Architecture:** Transformer-based encoder (tokenized 1D fusion vector + positional encoding + TransformerEncoder)
 **Purpose:** Combine visual, audio and sync feature embeddings to produce a single robust decision using cross-token attention.
 **Input:** Concatenated feature vector per video (visual_embedding || audio_embedding || sync_embedding). The 1D vector is split/padded into seq_len tokens of size d_model before feeding to the Transformer.
