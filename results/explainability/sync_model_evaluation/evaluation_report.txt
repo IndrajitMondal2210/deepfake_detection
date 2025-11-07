@@ -2,7 +2,7 @@ Sync Model Evaluation Report
 ========================================
 
 Model Type: Unimodal (Audio-Visual Synchronization)
-Dataset Size: 900 samples
+Dataset Size: 9000 samples
 
 ----------------------------------------
 Performance Metrics

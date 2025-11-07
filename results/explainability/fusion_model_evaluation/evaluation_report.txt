@@ -2,7 +2,7 @@ Proposed Fusion Model Evaluation Report
 ========================================
 
 Model Type: Multimodal (Visual + Audio + Sync)
-Dataset Size: 900 samples
+Dataset Size: 9000 samples
 
 ----------------------------------------
 Performance Metrics

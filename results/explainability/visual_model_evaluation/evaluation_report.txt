@@ -2,7 +2,7 @@ Visual Model Evaluation Report
 ========================================
 
 Model Type: Unimodal (Visual)
-Dataset Size: 900 samples
+Dataset Size: 9000 samples
 
 ----------------------------------------
 Performance Metrics
