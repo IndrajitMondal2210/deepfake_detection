@@ -1,277 +1,203 @@
-# Deepfake Detection System
-
-A comprehensive multi-modal deepfake detection system that analyzes both visual and audio components of videos to identify manipulated content. The system uses four specialized models to classify videos into four categories based on authenticity.
-
 ## 🎯 Project Overview
 
-This project detects deepfakes by analyzing:
-- **Visual content**: Face manipulation detection
-- **Audio content**: Voice synthesis detection  
-- **Audio-Visual synchronization**: Lip-sync mismatch detection
-- **Multi-modal fusion**: Combined decision making
+This project detects DeepFakes by analyzing:
 
-### Classification Categories
-- **A**: RealVideo-RealAudio (Authentic)
-- **B**: RealVideo-FakeAudio (Voice cloned)
-- **C**: FakeVideo-RealAudio (Face swapped)
-- **D**: FakeVideo-FakeAudio (Both manipulated)
+* 🎥 **Visual content:** Face manipulation detection
+* 🔊 **Audio content:** Voice synthesis detection
+* 👄 **Audio–Visual Synchronization:** Lip-sync mismatch detection
+* 🔗 **Multi-modal Fusion:** Combined decision-making
+
+---
+
+## 🧩 Classification Categories
+
+| Label        | Category | Description                               |
+| :----------- | :------- | :---------------------------------------- |
+| **0 — Real** | (A, B)   | RealVideo–RealAudio / RealVideo–FakeAudio |
+| **1 — Fake** | (C, D)   | FakeVideo–RealAudio / FakeVideo–FakeAudio |
+
+> The model performs **binary classification** — determining whether a video is **authentic (Real)** or **manipulated (Fake)**.
+
+---
 
 ## 📁 Project Structure
 
 ```
-deepfake_detction_2/
-├── data/                           # Dataset storage
-│   ├── raw/                        # Original FakeAVCeleb dataset
-│   │   ├── RealVideo-RealAudio/    # Category A: Authentic videos
-│   │   ├── RealVideo-FakeAudio/    # Category B: Voice cloned
-│   │   ├── FakeVideo-RealAudio/    # Category C: Face swapped
-│   │   ├── FakeVideo-FakeAudio/    # Category D: Both fake
-│   │   └── meta_data.csv           # Dataset metadata
-│   └── processed/                  # Preprocessed features
-│       ├── frames/                 # Extracted video frames
-│       ├── faces/                  # Cropped face regions
-│       ├── audio/                  # Extracted audio files
-│       ├── audio_features/         # Audio spectrograms
-│       ├── sync/                   # Lip-sync alignment data
-│       └── fusion_features/        # Combined features
-├── src/                            # Source code
-│   ├── preprocessing/              # Data preprocessing
-│   ├── models/                     # Model architectures
-│   ├── training/                   # Training scripts
-│   ├── evaluation/                 # Evaluation & metrics
-│   └── api/                        # FastAPI deployment
-├── models/                         # Trained model weights
-├── results/                        # Evaluation results
-├── notebooks/                      # Jupyter notebooks
-└── requirements.txt                # Dependencies
+deepfake_detection_2/
+├── data/
+│   ├── raw/                         # Original FakeAVCeleb dataset
+│   │   ├── RealVideo-RealAudio/     # Category A: Authentic
+│   │   ├── RealVideo-FakeAudio/     # Category B: Voice cloned
+│   │   ├── FakeVideo-RealAudio/     # Category C: Face swapped
+│   │   ├── FakeVideo-FakeAudio/     # Category D: Both fake
+│   │   └── meta_data.csv            # Dataset metadata
+│   └── processed/                   # Preprocessed features
+│       ├── frames/                  # Extracted video frames
+│       ├── faces/                   # Cropped face regions
+│       ├── audio/                   # Extracted audio files
+│       ├── audio_features/          # Mel-spectrograms
+│       ├── sync/                    # Lip-sync alignment data
+│       └── fusion_features/         # Combined multi-modal features
+│
+├── src/
+│   ├── preprocessing/               # Data preprocessing scripts
+│   ├── models/                      # Model architectures
+│   ├── training/                    # Training scripts
+│   ├── evaluation/                  # Evaluation and metrics
+│   └── api/                         # (Future) FastAPI deployment
+│
+├── models/                          # Saved model weights
+├── results/                         # Evaluation results
+├── notebooks/                       # Jupyter notebooks for experiments
+└── requirements.txt                 # Python dependencies
 ```
+
+---
 
 ## 🔄 Complete Workflow
 
-### 1. Data Preprocessing
+### 1️⃣ **Data Preprocessing**
 
-#### Frame Extraction (`src/preprocessing/extract_frames.py`)
-- Extracts frames from videos at regular intervals
-- Converts video files to image sequences
-- **Input**: MP4 videos from `data/raw/`
-- **Output**: Frame images in `data/processed/frames/`
+| Step                   | Script                                    | Description                                            | Output                           |
+| ---------------------- | ----------------------------------------- | ------------------------------------------------------ | -------------------------------- |
+| **Frame Extraction**   | `src/preprocessing/extract_frames.py`     | Extracts frames from videos                            | `data/processed/frames/`         |
+| **Face Detection**     | `src/preprocessing/face_detection.py`     | Detects and crops faces                                | `data/processed/faces/`          |
+| **Audio Extraction**   | `src/preprocessing/extract_audio.py`      | Extracts and converts audio to WAV                     | `data/processed/audio/`          |
+| **Feature Extraction** | `src/preprocessing/feature_extraction.py` | Converts audio to mel-spectrograms; creates embeddings | `data/processed/audio_features/` |
+| **Sync Data Creation** | `src/preprocessing/sync_preprocess.py`    | Aligns lips and audio for synchronization dataset      | `data/processed/sync/`           |
 
-#### Face Detection (`src/preprocessing/face_detection.py`)
-- Detects and crops face regions from frames
-- Uses computer vision techniques to isolate faces
-- **Input**: Frame images
-- **Output**: Cropped face images in `data/processed/faces/`
+---
 
-#### Audio Extraction (`src/preprocessing/extract_audio.py`)
-- Separates audio tracks from video files
-- Converts to standard format (WAV, 16kHz)
-- **Input**: MP4 videos
-- **Output**: Audio files in `data/processed/audio/`
+### 2️⃣ **Model Training**
 
-#### Feature Extraction (`src/preprocessing/feature_extraction.py`)
-- Converts audio to mel-spectrograms
-- Creates visual embeddings from face images
-- **Input**: Audio files and face images
-- **Output**: Feature vectors in `data/processed/audio_features/`
+#### 🧍‍♂️ Visual Model (`src/training/train_visual.py`)
 
-#### Sync Preprocessing (`src/preprocessing/sync_preprocess.py`)
-- Aligns lip movements with audio
-- Creates synchronization datasets
-- **Input**: Face images and audio
-- **Output**: Sync data in `data/processed/sync/`
+* **Architecture:** ResNet-18 based CNN
+* **Purpose:** Detects face manipulation artifacts
+* **Input:** Face crops (224×224)
+* **Output:** Real / Fake classification
+* **Saved at:** `models/visual_model/visual_model.pth`
 
-### 2. Model Training
+---
 
-#### Visual Model (`src/training/train_visual.py`)
-- **Architecture**: ResNet-18 based CNN
-- **Purpose**: Detects face manipulation artifacts
-- **Input**: Face images (224x224)
-- **Output**: Real/Fake classification
-- **Saved**: `models/visual_model/visual_model.pth`
+#### 🔊 Audio Model (`src/training/train_audio.py`)
 
-#### Audio Model (`src/training/train_audio.py`)
-- **Architecture**: CNN for spectrogram analysis
-- **Purpose**: Identifies synthetic voice patterns
-- **Input**: Mel-spectrograms (64x160)
-- **Output**: Real/Fake audio classification
-- **Saved**: `models/audio_model/audio_model.pth`
+* **Architecture:** CNN for spectrogram analysis
+* **Purpose:** Detects voice cloning or synthetic speech
+* **Input:** Mel-spectrograms (64×160)
+* **Output:** Real / Fake audio classification
+* **Saved at:** `models/audio_model/audio_model.pth`
 
-#### Sync Model (`src/training/train_sync.py`)
-- **Architecture**: LSTM-based sequence model
-- **Purpose**: Detects lip-sync mismatches
-- **Input**: Lip movement + audio alignment
-- **Output**: Sync/Unsync classification
-- **Saved**: `models/sync_model/sync_model.pth`
+---
 
-**Fusion Model (src/training/train_fusion.py)**
+#### 👄 Sync Model (`src/training/train_sync.py`)
 
-**Architecture:** Transformer-based encoder (tokenized 1D fusion vector + positional encoding + TransformerEncoder)
+* **Architecture:** CNN-based (similar to SyncNet)
+* **Purpose:** Detects lip–speech mismatches
+* **Input:** Lip movement + audio alignment
+* **Output:** Synced / Unsynced classification
+* **Saved at:** `models/sync_model/sync_model.pth`
 
-**Purpose:** Combine visual, audio and sync feature embeddings to produce a single robust decision using cross-token attention.
+---
 
-**Input:** Concatenated feature vector per video (visual_embedding || audio_embedding || sync_embedding). The 1D vector is split/padded into seq_len tokens of size d_model before feeding to the Transformer.
+#### 🔗 Fusion Model (`src/training/train_fusion_transformer.py`)
 
-**Output:** Final 4-category classification (A, B, C, D)
+* **Architecture:** Transformer-based encoder (tokenized fusion vector + positional encoding + TransformerEncoder)
+* **Purpose:** Combines **visual**, **audio**, and **sync** features to make the final Real/Fake decision.
+* **Input:** Concatenated embeddings → split into token sequences for the Transformer.
+* **Output:** **Binary classification (Real vs Fake)**
 
-**Training details:**
+**Training Details:**
 
-  - Criterion: CrossEntropyLoss
-  - Optimizer: Adam
-  - LR Scheduler: StepLR (optional)
-  - Batch size, learning rate, epochs: configured in training script (defaults: batch_size=16, lr=1e-4, epochs=6)
-  - 
-**Saved:** models/fusion_model/fusion_transformer.pth
+* **Loss:** CrossEntropyLoss
+* **Optimizer:** Adam
+* **LR Scheduler:** StepLR
+* **Batch Size:** 16
+* **Learning Rate:** 1e-4
+* **Epochs:** 6
+* **Saved Model:** `models/fusion_model/fusion_transformer.pth`
 
 **Notes:**
 
-  - The script tokenizes the fusion vector into seq_len tokens (seq_len = ceil(input_dim / d_model)) and pads the vector if needed.
-  - Class labels mapping must follow the metadata.csv `category` field:
-      A -> 0
-      B -> 1
-      C -> 2
-      D -> 3
-  - When loading the checkpoint, reconstruct the FusionTransformer with the same input_dim and d_model used during training and set num_classes=4.
+* The fusion vector is padded and reshaped into `(seq_len, d_model)` tokens.
+* Transformer learns cross-modal relationships through attention.
 
+---
 
-### 3. Model Evaluation
+### 3️⃣ **Model Evaluation**
 
-#### Performance Metrics (`src/evaluation/evaluate.py`)
-- Calculates accuracy, precision, recall, F1-score
-- Generates ROC curves and confusion matrices
-- **Output**: Metrics saved in `results/evaluation/`
+| Component               | Script                             | Description                                                       | Output                    |
+| ----------------------- | ---------------------------------- | ----------------------------------------------------------------- | ------------------------- |
+| **Performance Metrics** | `src/evaluation/evaluate.py`       | Calculates accuracy, precision, recall, F1, ROC, confusion matrix | `results/evaluation/`     |
+| **Explainability**      | `src/evaluation/explainability.py` | Grad-CAM & feature heatmaps                                       | `results/explainability/` |
 
-#### Explainability (`src/evaluation/explainability.py`)
-- Generates Grad-CAM visualizations
-- Shows which regions influence decisions
-- **Output**: Heatmaps in `results/explainability/`
+---
 
-### 4. API Deployment
+### 4️⃣ **API Deployment (Future Work)**
 
-#### FastAPI Server (`src/api/main.py`)
-- **Endpoint**: `POST /predict`
-- **Input**: Video file upload
-- **Process**: 
-  1. Extract frames and audio
-  2. Run all four models
-  3. Combine predictions
-- **Output**: JSON with predictions and confidence scores
+| File                                                                    | Description                                  |
+| ----------------------------------------------------------------------- | -------------------------------------------- |
+| `src/api/main.py`                                                       | FastAPI endpoint `/predict` for video upload |
+| `src/api/inference.py`                                                  | Loads models, runs full inference pipeline   |
+| **Planned Output:** JSON with Real/Fake prediction and confidence score |                                              |
 
-#### Inference Pipeline (`src/api/inference.py`)
-- Handles video preprocessing
-- Loads trained models
-- Performs real-time prediction
+**Example:**
 
-## 🚀 Quick Start
-
-### Installation
-```bash
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
-
-# Install dependencies
-pip install -r requirements.txt
+```json
+{
+  "visual_pred": "Real",
+  "audio_pred": "Fake",
+  "fusion_pred": "Fake",
+  "confidence": 0.97
+}
 ```
 
-### Data Preparation
-```bash
-# Extract frames from videos
-python src/preprocessing/extract_frames.py
-
-# Detect and crop faces
-python src/preprocessing/face_detection.py
-
-# Extract audio features
-python src/preprocessing/extract_audio.py
-python src/preprocessing/feature_extraction.py
-```
-
-### Training Models
-```bash
-# Train individual models
-python src/training/train_visual.py
-python src/training/train_audio.py
-python src/training/train_sync.py
-
-# Train fusion model
-python src/training/train_fusion.py
-```
-
-### Evaluation
-```bash
-# Evaluate all models
-python src/evaluation/evaluate.py
-
-# Generate explainability results
-python src/evaluation/explainability.py
-```
-
-### Run API
-```bash
-# Start FastAPI server
-uvicorn src.api.main:app --reload
-
-# API will be available at http://localhost:8000
-# Upload video to /predict endpoint
-```
+---
 
 ## 📊 Dataset Information
 
-**FakeAVCeleb Dataset** contains videos generated using:
-- **Faceswap**: Face replacement
-- **FSGAN**: Face reenactment  
-- **Wav2Lip**: Lip synchronization
-- **RTVC**: Voice cloning
+**FakeAVCeleb Dataset**
 
-Each video is categorized based on authenticity of visual and audio components.
+* Generated using **Faceswap**, **FSGAN**, **Wav2Lip**, and **RTVC**.
+* Each video is categorized by the authenticity of **video** and **audio** components.
 
-## 🎯 Model Performance
+| Technique | Description         |
+| --------- | ------------------- |
+| Faceswap  | Face replacement    |
+| FSGAN     | Face reenactment    |
+| Wav2Lip   | Lip synchronization |
+| RTVC      | Voice cloning       |
 
-Results are saved in `results/evaluation/`:
-- Confusion matrices for each model
-- ROC curves showing detection performance
-- Score distributions for real vs fake content
+---
 
-## 🔧 Key Features
-
-- **Multi-modal Analysis**: Combines visual, audio, and sync detection
-- **Real-time Inference**: FastAPI deployment for live detection
-- **Explainable AI**: Grad-CAM visualizations show decision reasoning
-- **Comprehensive Evaluation**: Multiple metrics and visualizations
-- **Modular Design**: Each component can be trained/evaluated independently
-
-## 📝 Usage Example
+## 📝 Usage Example (After API Integration)
 
 ```python
-# Upload video to API
 import requests
 
 with open("test_video.mp4", "rb") as f:
-    response = requests.post(
-        "http://localhost:8000/predict",
-        files={"file": f}
-    )
+    response = requests.post("http://localhost:8000/predict", files={"file": f})
 
 result = response.json()
-print(f"Visual: {result['visual_pred']} ({result['visual_prob']:.3f})")
-print(f"Audio: {result['audio_pred']} ({result['audio_prob']:.3f})")
-print(f"Final: {result['fusion_pred']} ({result['fusion_prob']:.3f})")
+print(f"Final Prediction: {result['fusion_pred']} ({result['confidence']:.2f})")
 ```
 
-## 🎓 Research Applications
+---
 
-This system can be used for:
-- Social media content verification
-- News authenticity checking
-- Digital forensics
-- Media literacy education
-- Academic research on deepfake detection
+## 🎓 Research & Real-World Applications
 
-## 📈 Future Enhancements
+* Social Media Content Verification
+* News & Broadcast Authenticity Checking
+* Digital Forensics & Law Enforcement
+* Media Literacy & Awareness
+* Academic Research on DeepFake Detection
 
-- Real-time video stream processing
-- Mobile app deployment
-- Additional deepfake generation methods
-- Improved model architectures
-- Cloud deployment options
+---
+
+## 🚀 Future Enhancements
+
+* Real-time video stream analysis
+* FastAPI deployment (inference endpoint)
+* Mobile and cloud deployment support
+* Integration of new deepfake generation types
+* Cross-modal contrastive learning (future research)
